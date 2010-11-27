@@ -231,20 +231,25 @@ void *gl_threadfunc(void *arg)
 	printf("GL thread\n");
 
 	glutInit(&g_argc, g_argv);
+	printf("GL thread 1\n");
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
 	glutInitWindowSize(1280, 480);
 	glutInitWindowPosition(0, 0);
+printf("GL thread 2\n");
 
 	window = glutCreateWindow("LibFreenect");
+printf("GL thread 3\n");
 
 	glutDisplayFunc(&DrawGLScene);
 	glutIdleFunc(&DrawGLScene);
 	glutReshapeFunc(&ReSizeGLScene);
 	glutKeyboardFunc(&keyPressed);
 
+printf("GL thread 4\n");
 	InitGL(1280, 480);
 
+printf("GL thread 5\n");
 	glutMainLoop();
 
 	return NULL;

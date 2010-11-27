@@ -24,58 +24,55 @@
  * either License.
  */
 
-#ifndef USB_LIBUSB10
-#define USB_LIBUSB10
+#ifndef USB_LIBUSB_WIN32
+#define USB_LIBUSB_WIN32
 
-#include <libusb-1.0/libusb.h>
+#include <usb.h>
 
-#if defined(__APPLE__)
-/*
-  From Github Issue 22 by Roefer -
-  https://github.com/OpenKinect/libfreenect/issues/#issue/22
-
-  The current implementation still does not reach 30 Hz on MacOS. This
-  is due to bad scheduling of USB transfers in libusb (Ed Note: libusb
-  1.0.8). A fix can be found at
-  http://www.informatik.uni-bremen.de/~roefer/libusb/libusb-osx-kinect.diff
-
-  (Ed Note: patch applies to libusb repo at 7da756e09fd)
-
-  In camera.c, I use PKTS_PER_XFER = 128, NUM_XFERS = 4. There are a
-  few rules: PKTS_PER_XFER * NUM_XFERS <= 1000, PKTS_PER_XFER % 8 == 0.
-*/
-#define PKTS_PER_XFER 128
-#define NUM_XFERS 4
-#define DEPTH_PKTBUF 2048
-#define VIDEO_PKTBUF 2048
-#else
 #define PKTS_PER_XFER 16
-#define NUM_XFERS 16
-#define DEPTH_PKTBUF 1920
-#define VIDEO_PKTBUF 1920
-#endif
+#define NUM_XFERS 36
+#define DEPTH_PKTBUF 1760
+#define RGB_PKTBUF 1920
 
-typedef struct {
-	libusb_context *ctx;
+
+#define USB_MAX_STREAMS 16
+
+//#include "freenect_internal.h"
+
+struct fnusb_ctx {
+	void *ctx;
 	int should_free_ctx;
-} fnusb_ctx;
+};
 
-typedef struct {
+typedef struct fnusb_ctx fnusb_ctx;
+
+struct fnusb_dev {
 	freenect_device *parent; //so we can go up from the libusb userdata
-	libusb_device_handle *dev;
-} fnusb_dev;
+	usb_dev_handle *dev;
+};
+typedef struct fnusb_dev fnusb_dev;
 
-typedef struct {
-	fnusb_dev *parent; //so we can go up from the libusb userdata
-	struct libusb_transfer **xfers;
-	uint8_t *buffer;
+struct fnusb_xfer
+{
+	void *context;
+	uint8_t* buffer;
+};
+typedef struct fnusb_xfer fnusb_xfer;
+
+struct fnusb_isoc_stream {
+	struct fnusb_dev *parent; //so we can go up from the libusb userdata
+	struct fnusb_xfer* xfers;
 	fnusb_iso_cb cb;
 	int num_xfers;
 	int pkts;
 	int len;
+	int xfer_index;
 	int dead;
 	int dead_xfers;
-} fnusb_isoc_stream;
+};
+typedef struct fnusb_isoc_stream fnusb_isoc_stream;
+
+struct fnusb_isoc_stream* open_streams[USB_MAX_STREAMS];
 
 int fnusb_num_devices(fnusb_ctx *ctx);
 

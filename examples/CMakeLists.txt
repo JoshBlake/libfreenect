@@ -14,7 +14,11 @@ else()
   find_package(OpenGL REQUIRED)
   find_package(GLUT REQUIRED)
   include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${USB_INCLUDE_DIRS})
-  target_link_libraries(glview freenect ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} m)
+  if (WIN32)
+    target_link_libraries(glview freenect ${OPENGL_LIBRARIES} glut32 ${CMAKE_THREAD_LIBS_INIT} m)
+  else()
+    target_link_libraries(glview freenect ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} m)
+  endif()
 endif()
 
 install (TARGETS glview
