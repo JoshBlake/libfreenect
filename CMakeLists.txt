@@ -68,7 +68,16 @@ include (FindOS)
 include (SetupDirectories)
 
 # Find packages needed to build library
-find_package(libusb-1.0 REQUIRED)
+IF(UNIX)
+  find_package(libusb-1.0 REQUIRED)
+  # libfreenect.h includes libusb.h, so everyone needs this too
+  include_directories(${LIBUSB_1_INCLUDE_DIRS})
+ELSE()
+  find_package(libusb REQUIRED)
+  # libfreenect.h includes libusb.h, so everyone needs this too
+  include_directories(${LIBUSB_INCLUDE_DIRS})
+ENDIF()
+
 
 # Check the endianness of the system
 include (TestBigEndian)
@@ -88,8 +97,6 @@ SET(DOC_OUTPUT_PATH ${CMAKE_BINARY_DIR}/doc)
 # Pretty much everyone is going to need the main includes
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# libfreenect.h includes libusb.h, so everyone needs this too
-include_directories(${LIBUSB_1_INCLUDE_DIRS})
 
 # Add library project
 add_subdirectory (src)

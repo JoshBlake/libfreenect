@@ -307,10 +307,12 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	got_depth++;
 	pthread_cond_signal(&gl_frame_cond);
 	pthread_mutex_unlock(&gl_backbuf_mutex);
+	printf("got depth\n");
 }
 
 void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 {
+	printf("got rgb\n");
 	pthread_mutex_lock(&gl_backbuf_mutex);
 
 	// swap buffers
@@ -345,7 +347,7 @@ void *freenect_threadfunc(void *arg)
 		state = freenect_get_tilt_state(f_dev);
 		double dx,dy,dz;
 		freenect_get_mks_accel(state, &dx, &dy, &dz);
-		printf("\r raw acceleration: %4d %4d %4d  mks acceleration: %4f %4f %4f", state->accelerometer_x, state->accelerometer_y, state->accelerometer_z, dx, dy, dz);
+		//printf("\r raw acceleration: %4d %4d %4d  mks acceleration: %4f %4f %4f", state->accelerometer_x, state->accelerometer_y, state->accelerometer_z, dx, dy, dz);
 		fflush(stdout);
 
 		if (requested_format != current_format) {
@@ -420,6 +422,6 @@ int main(int argc, char **argv)
 
 	// OS X requires GLUT to run on the main thread
 	gl_threadfunc(NULL);
-
+	while(1);
 	return 0;
 }

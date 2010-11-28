@@ -108,7 +108,7 @@ int fnusb_process_events(fnusb_ctx *ctx)
 			buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
 
 			ZeroMemory(buf, stream->pkts * stream->len);
-			ret = usb_submit_async(stream->xfers[stream->xfer_index].context, (char*)stream->xfers[i].buffer, stream->pkts * stream->len);
+			ret = usb_submit_async(stream->xfers[stream->xfer_index].context, (char*)stream->xfers[stream->xfer_index].buffer, stream->pkts * stream->len);
 			if( ret < 0 ){
 				printf("error: %s\n", usb_strerror());
 				usb_cancel_async(stream->xfers[stream->xfer_index].context);
@@ -156,6 +156,9 @@ int fnusb_open_subdevices(freenect_device *dev, int index)
 	struct usb_device *cam_device = NULL;
 	struct usb_dev_handle *cam_handle;
 
+	struct usb_device *motor_device = NULL;
+	struct usb_dev_handle *motor_handle;
+
 	dev->usb_cam.parent = dev;
 	
 	cam_device = fnusb_find_device_by_vid_pid(0x45e, 0x2ae, index);
@@ -167,6 +170,19 @@ int fnusb_open_subdevices(freenect_device *dev, int index)
 
 	if(usb_set_configuration(cam_handle, 1) < 0) return -2; //open failed
 	if(usb_claim_interface(cam_handle, 0) < 0) return -2; //open failed
+
+
+	dev->usb_motor.parent = dev;
+	
+	motor_device = fnusb_find_device_by_vid_pid(VID_MICROSOFT, PID_NUI_MOTOR, index);
+		
+	if(NULL == motor_device) return -1; //Can't find device
+	
+	motor_handle = usb_open(motor_device);
+	dev->usb_motor.dev = motor_handle;
+
+	if(usb_set_configuration(motor_handle, 1) < 0) return -2; //open failed
+	if(usb_claim_interface(motor_handle, 0) < 0) return -2; //open failed
 
 	return 0;
 }
@@ -247,6 +263,8 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, in
 	{
 		if (open_streams[i] == NULL)
 			open_streams[i] = strm;
+		else
+			break;
 	}
 	
 	return 0;

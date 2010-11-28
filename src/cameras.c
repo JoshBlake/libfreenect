@@ -84,10 +84,10 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 	// handle lost packets
 	if (strm->seq != hdr->seq) {
 		uint8_t lost = hdr->seq - strm->seq;
-		FN_LOG(strm->valid_frames < 2 ? LL_SPEW : LL_INFO, \
+		FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_INFO, \
 		       "[Stream %02x] Lost %d packets\n", strm->flag, lost);
 		if (lost > 5) {
-			FN_LOG(strm->valid_frames < 2 ? LL_SPEW : LL_NOTICE, \
+			FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_NOTICE, \
 			       "[Stream %02x] Lost too many packets, resyncing...\n", strm->flag);
 			strm->synced = 0;
 			return 0;
@@ -110,7 +110,7 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 	if (!(strm->pkt_num == 0 && hdr->flag == sof) &&
 	    !(strm->pkt_num == strm->pkts_per_frame-1 && hdr->flag == eof) &&
 	    !(strm->pkt_num > 0 && strm->pkt_num < strm->pkts_per_frame-1 && hdr->flag == mof)) {
-		FN_LOG(strm->valid_frames < 2 ? LL_SPEW : LL_NOTICE, \
+		FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_NOTICE, \
 		       "[Stream %02x] Inconsistent flag %02x with %d packets in buf (%d total), resyncing...\n",
 		       strm->flag, hdr->flag, strm->pkt_num, strm->pkts_per_frame);
 		strm->synced = 0;
@@ -119,13 +119,13 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 
 	// copy data
 	if (datalen > strm->pkt_size) {
-		FN_LOG(strm->valid_frames < 2 ? LL_SPEW : LL_WARNING, \
+		FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_WARNING, \
 		       "[Stream %02x] Expected %d data bytes, but got %d. Dropping...\n", strm->flag, strm->pkt_size, datalen);
 		return got_frame;
 	}
 
 	if (datalen != strm->pkt_size && hdr->flag != eof)
-		FN_LOG(strm->valid_frames < 2 ? LL_SPEW : LL_WARNING, \
+		FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_WARNING, \
 		       "[Stream %02x] Expected %d data bytes, but got only %d\n", strm->flag, strm->pkt_size, datalen);
 
 	uint8_t *dbuf = strm->raw_buf + strm->pkt_num * strm->pkt_size;
