@@ -23,6 +23,7 @@ install (TARGETS freenect
 
 add_library (freenectstatic STATIC ${SRC})
 set_target_properties (freenectstatic PROPERTIES OUTPUT_NAME freenect)
+  SET_TARGET_PROPERTIES (freenect PROPERTIES COMPILE_FLAGS "-g")
 IF(UNIX AND NOT APPLE)
   SET_TARGET_PROPERTIES (freenectstatic PROPERTIES COMPILE_FLAGS "-fPIC")
 ENDIF()

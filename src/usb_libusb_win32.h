@@ -62,6 +62,7 @@ struct fnusb_isoc_stream {
 	struct fnusb_xfer* xfers;
 	fnusb_iso_cb cb;
 	int num_xfers;
+	int ep;
 	int pkts;
 	int len;
 	int xfer_index;
@@ -86,5 +87,6 @@ int fnusb_stop_iso(fnusb_dev *dev, fnusb_isoc_stream *strm);
 
 int fnusb_control(fnusb_dev *dev, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint8_t *data, uint16_t wLength);
 
+void setup_EP_transfer(int i, fnusb_dev *dev, fnusb_isoc_stream *strm, int ep, int len);
 
 #endif

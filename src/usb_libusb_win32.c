@@ -92,18 +92,22 @@ int fnusb_process_events(fnusb_ctx *ctx)
 		for (j=0; j<stream->num_xfers; j++)
 		{
 			read = usb_reap_async_nocancel(stream->xfers[stream->xfer_index].context, 10000);
-			//printf("read %d bytes from %d,%d: %d\n", read, i, j, stream->xfer_index);
+			if (read != 0)
+				printf("read %d/%d bytes from %d,%d: %d\n", read, stream->len, i, j, stream->xfer_index);
 			if (read < 0)
 			{
-				if (read != -116)
+				if (read == -22)
 				{
-					printf("error: %s\n", usb_strerror());
+					setup_EP_transfer(stream->xfer_index, stream->parent, stream, stream->ep, stream->len);
+				}
+				else if (read != -116 && read < 0)
+				{
+					printf("error: %d %s\n", read, usb_strerror());
 					usb_cancel_async(stream->xfers[stream->xfer_index].context);
 				}
 				else
 				{
 					//got to a stream that wasn't ready, wait till next time
-					printf("=================break %d\n", j);
 					break;
 				}
 			}
@@ -112,21 +116,26 @@ int fnusb_process_events(fnusb_ctx *ctx)
 				if (stream->dead) {
 					freenect_context *ctx = stream->parent->parent->parent;
 					stream->dead_xfers++;
-					FN_SPEW("EP transfer complete, %d left\n", stream->num_xfers - stream->dead_xfers);
-					return 0;
+					printf("EP transfer complete, %d left\n", stream->num_xfers - stream->dead_xfers);
+					continue;
 				}
 
 				if (read > 0)
 				{
-					//printf("read %d bytes from %d:%d\n",  read, i, stream->xfer_index);
+					printf("iso %d %d %d\n",  read, i, stream->xfer_index);
 					iso_callback(stream, read);	
 				}
 				buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
-
+				
+				//printf("pkts: %d  len: %d  buf: %p\n", stream->pkts, stream->len, buf);
+				if (buf == 0)
+				{
+					continue;
+				}
 				ZeroMemory(buf, stream->pkts * stream->len);
 				ret = usb_submit_async(stream->xfers[stream->xfer_index].context, (char*)stream->xfers[stream->xfer_index].buffer, stream->pkts * stream->len);
 				if( ret < 0 ){
-					printf("error: %s\n", usb_strerror());
+					printf("error: %d %s\n", ret, usb_strerror());
 					usb_cancel_async(stream->xfers[stream->xfer_index].context);
 				}
 
@@ -243,6 +252,22 @@ static void iso_callback(fnusb_isoc_stream *stream, int read)
 	
 }
 
+void setup_EP_transfer(int i, fnusb_dev *dev, fnusb_isoc_stream *strm, int ep, int len)
+{
+	if (strm->xfers[i].buffer != NULL)
+	{
+		free(strm->xfers[i].buffer);
+	}
+	strm->xfers[i].context = NULL;
+	strm->xfers[i].buffer = (uint8_t*)malloc(sizeof(uint8_t) * strm->len * strm->pkts);
+	ZeroMemory(strm->xfers[i].buffer, strm->pkts * strm->len);
+
+	usb_isochronous_setup_async(dev->dev, &strm->xfers[i].context, ep, len);
+	int ret = usb_submit_async(strm->xfers[i].context, (char*)strm->xfers[i].buffer, strm->pkts * strm->len);
+	if (ret < 0)
+		printf("Failed to submit xfer %d: %d\n", i, ret);
+}
+
 int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, int ep, int num_xfers, int pkts, int len)
 {
 	int ret, i;
@@ -250,21 +275,22 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, in
 	strm->cb = cb;
 	strm->num_xfers = num_xfers;
 	strm->pkts = pkts;
+	strm->ep = ep;
 	strm->len = len;
 	strm->xfers = (fnusb_xfer*)malloc(sizeof(fnusb_xfer) * num_xfers);
 	strm->xfer_index = 0;
 
 	for (i=0; i<num_xfers; i++) {
 		printf("Creating EP %02x transfer #%d\n", ep, i);		
-		
-		strm->xfers[i].context = NULL;
+		setup_EP_transfer(i, dev, strm, ep, len);
+		/*strm->xfers[i].context = NULL;
 		strm->xfers[i].buffer = (uint8_t*)malloc(sizeof(uint8_t) * strm->len * strm->pkts);
 		ZeroMemory(strm->xfers[i].buffer, strm->pkts * strm->len);
 
 		usb_isochronous_setup_async(dev->dev, &strm->xfers[i].context, ep, len);
 		ret = usb_submit_async(strm->xfers[i].context, (char*)strm->xfers[i].buffer, pkts * len);
 		if (ret < 0)
-			printf("Failed to submit xfer %d: %d\n", i, ret);
+			printf("Failed to submit xfer %d: %d\n", i, ret);*/
 
 	}
 
@@ -294,12 +320,19 @@ int fnusb_stop_iso(fnusb_dev *dev, fnusb_isoc_stream *strm)
 	while (strm->dead_xfers < strm->num_xfers) {
 		fnusb_process_events(ctx->usb.ctx);
 	}
-
+	printf("stop 0\n");
 	for (i=0; i<strm->num_xfers; i++)
-		free(strm->xfers[i].buffer);
+	{
+		printf("stop 0 %d\n", i);
+		printf("stop 0 %d %d\n", i, strm->xfers[i].buffer);
+		if (strm->xfers[i].buffer != NULL)
+			free(strm->xfers[i].buffer);
+	}
+	printf("stop 1\n");
 	free(strm->xfers);
-
+	printf("stop 2\n");
 	memset(strm, 0, sizeof(*strm));
+	printf("stop 3\n");
 	return 0;
 }
 
