@@ -80,9 +80,9 @@ void DrawGLScene()
 {
 	pthread_mutex_lock(&gl_backbuf_mutex);
 
-	while (!got_depth || !got_rgb) {
+	/*while (!got_depth || !got_rgb) {
 		pthread_cond_wait(&gl_frame_cond, &gl_backbuf_mutex);
-	}
+	}*/
 
 	if (requested_format != current_format) {
 		pthread_mutex_unlock(&gl_backbuf_mutex);
@@ -265,7 +265,6 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	pthread_mutex_lock(&gl_backbuf_mutex);
 	for (i=0; i<FREENECT_FRAME_PIX; i++) {
 		int pval = t_gamma[depth[i]];
-		pval = i % 255;
 		int lb = pval & 0xff;
 		switch (pval>>8) {
 			case 0:
@@ -309,7 +308,7 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	pthread_cond_signal(&gl_frame_cond);
 	pthread_mutex_unlock(&gl_backbuf_mutex);
 	int index = FREENECT_FRAME_PIX/2;
-	printf("got depth: %d midval: %d\n", got_depth, depth[index]);
+	//printf("got depth: %d midval: %d\n", got_depth, depth[index]);
 }
 
 void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
@@ -362,10 +361,14 @@ void *freenect_threadfunc(void *arg)
 
 	printf("\nshutting down streams...\n");
 
+	printf("stopping depth...\n");
 	freenect_stop_depth(f_dev);
-	freenect_stop_video(f_dev);
+	printf("stopping video...\n");
+	//freenect_stop_video(f_dev);
 
+	printf("closing device...\n");
 	freenect_close_device(f_dev);
+	printf("shutdown...\n");
 	freenect_shutdown(f_ctx);
 
 	printf("-- done!\n");
@@ -399,7 +402,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
+	//freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
+	freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
 	//freenect_set_log_level(f_ctx, FREENECT_LOG_FLOOD);
 
 	int nr_devices = freenect_num_devices (f_ctx);

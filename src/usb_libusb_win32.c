@@ -92,7 +92,7 @@ int fnusb_process_events(fnusb_ctx *ctx)
 		for (j=0; j<stream->num_xfers; j++)
 		{
 			read = usb_reap_async_nocancel(stream->xfers[stream->xfer_index].context, 10000);
-			//printf("read %d bytes from %d: %d\n", read, i, stream->xfer_index);
+			//printf("read %d bytes from %d,%d: %d\n", read, i, j, stream->xfer_index);
 			if (read < 0)
 			{
 				if (read != -116)
@@ -100,9 +100,22 @@ int fnusb_process_events(fnusb_ctx *ctx)
 					printf("error: %s\n", usb_strerror());
 					usb_cancel_async(stream->xfers[stream->xfer_index].context);
 				}
+				else
+				{
+					//got to a stream that wasn't ready, wait till next time
+					printf("=================break %d\n", j);
+					break;
+				}
 			}
 			else
 			{
+				if (stream->dead) {
+					freenect_context *ctx = stream->parent->parent->parent;
+					stream->dead_xfers++;
+					FN_SPEW("EP transfer complete, %d left\n", stream->num_xfers - stream->dead_xfers);
+					return 0;
+				}
+
 				if (read > 0)
 				{
 					//printf("read %d bytes from %d:%d\n",  read, i, stream->xfer_index);
@@ -209,13 +222,6 @@ int fnusb_close_subdevices(freenect_device *dev)
 static void iso_callback(fnusb_isoc_stream *stream, int read)
 {
 	int j;
-		
-	if (stream->dead) {
-		freenect_context *ctx = stream->parent->parent->parent;
-		stream->dead_xfers++;
-		FN_SPEW("EP transfer complete, %d left\n", stream->num_xfers - stream->dead_xfers);
-		return;
-	}
 
 	uint8_t *buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
 
@@ -239,7 +245,6 @@ static void iso_callback(fnusb_isoc_stream *stream, int read)
 
 int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, int ep, int num_xfers, int pkts, int len)
 {
-	printf("iso %d %d\n", ep, num_xfers);
 	int ret, i;
 	strm->parent = dev;
 	strm->cb = cb;

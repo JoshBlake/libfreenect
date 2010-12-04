@@ -96,8 +96,6 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 		if (lost > 5) {
 			FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_NOTICE, \
 			       "[Stream %02x] Lost too many packets, resyncing...\n", strm->flag);
-			FN_LOG(LL_DEBUG, "[Stream %02x] Last packet: flag: %02x seq: %d\n", strm->flag, hdr->flag, hdr->seq);
-
 			strm->synced = 0;
 			return 0;
 		}
