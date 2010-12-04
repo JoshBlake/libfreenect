@@ -78,7 +78,7 @@ int fnusb_shutdown(fnusb_ctx *ctx)
 static void iso_callback(fnusb_isoc_stream *strm, int read);
 int fnusb_process_events(fnusb_ctx *ctx)
 {
-	int i;
+	int i, j;
 	int read, ret;
 	uint8_t *buf;
 	fnusb_isoc_stream* stream;
@@ -89,36 +89,40 @@ int fnusb_process_events(fnusb_ctx *ctx)
 		if (NULL == stream)
 			continue;
 
-		read = usb_reap_async_nocancel(stream->xfers[stream->xfer_index].context, 10000);
-		//printf("read %d bytes\n", read);
-		if (read < 0)
+		for (j=0; j<stream->num_xfers; j++)
 		{
-			if (read != -116)
+			read = usb_reap_async_nocancel(stream->xfers[stream->xfer_index].context, 10000);
+			//printf("read %d bytes from %d: %d\n", read, i, stream->xfer_index);
+			if (read < 0)
 			{
-				printf("error: %s\n", usb_strerror());
-				usb_cancel_async(stream->xfers[stream->xfer_index].context);
+				if (read != -116)
+				{
+					printf("error: %s\n", usb_strerror());
+					usb_cancel_async(stream->xfers[stream->xfer_index].context);
+				}
 			}
-		}
-		else
-		{
-			if (read > 0)
+			else
 			{
-				iso_callback(stream, read);	
-			}
-			buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
+				if (read > 0)
+				{
+					//printf("read %d bytes from %d:%d\n",  read, i, stream->xfer_index);
+					iso_callback(stream, read);	
+				}
+				buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
 
-			ZeroMemory(buf, stream->pkts * stream->len);
-			ret = usb_submit_async(stream->xfers[stream->xfer_index].context, (char*)stream->xfers[stream->xfer_index].buffer, stream->pkts * stream->len);
-			if( ret < 0 ){
-				printf("error: %s\n", usb_strerror());
-				usb_cancel_async(stream->xfers[stream->xfer_index].context);
-			}
+				ZeroMemory(buf, stream->pkts * stream->len);
+				ret = usb_submit_async(stream->xfers[stream->xfer_index].context, (char*)stream->xfers[stream->xfer_index].buffer, stream->pkts * stream->len);
+				if( ret < 0 ){
+					printf("error: %s\n", usb_strerror());
+					usb_cancel_async(stream->xfers[stream->xfer_index].context);
+				}
 
-			stream->xfer_index++;
-			if (stream->xfer_index >= stream->num_xfers)
-			{
-				stream->xfer_index = 0;
-			}	
+				stream->xfer_index++;
+				if (stream->xfer_index >= stream->num_xfers)
+				{
+					stream->xfer_index = 0;
+				}	
+			}
 		}
 	}
 
@@ -235,7 +239,7 @@ static void iso_callback(fnusb_isoc_stream *stream, int read)
 
 int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, int ep, int num_xfers, int pkts, int len)
 {
-	printf("iso %d\n", ep);
+	printf("iso %d %d\n", ep, num_xfers);
 	int ret, i;
 	strm->parent = dev;
 	strm->cb = cb;
@@ -262,9 +266,10 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, in
 	for (i=0; i<USB_MAX_STREAMS; i++)
 	{
 		if (open_streams[i] == NULL)
+		{
 			open_streams[i] = strm;
-		else
 			break;
+		}
 	}
 	
 	return 0;
@@ -295,6 +300,5 @@ int fnusb_stop_iso(fnusb_dev *dev, fnusb_isoc_stream *strm)
 
 int fnusb_control(fnusb_dev *dev, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint8_t *data, uint16_t wLength)
 {
-	printf("ctrl: %d\n", bRequest);
 	return usb_control_msg(dev->dev, bmRequestType, bRequest, wValue, wIndex, (char*)data, wLength, 160);
 }

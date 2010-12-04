@@ -60,7 +60,14 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 		return 0;
 	}
 
-	FN_FLOOD("[Stream %02x] Packet with flag: %02x\n", strm->flag, hdr->flag);
+	FN_FLOOD("[Stream %02x] Packet with flag: %02x seq: %d unk: %02x %02x len: %d\n", strm->flag, hdr->flag, hdr->seq, hdr->unk2, hdr->unk3, len);
+
+	if (hdr->flag == 0x48 ||
+		hdr->flag == 0x49)
+	{
+		FN_SPEW("[Stream %02x] Packet with flag: %02x seq: %d unk: %02x %02x len: %d\n", strm->flag, hdr->flag, hdr->seq, hdr->unk2, hdr->unk3, len);
+		return 0;
+	}
 
 	uint8_t sof = strm->flag|1;
 	uint8_t mof = strm->flag|2;
@@ -89,6 +96,8 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 		if (lost > 5) {
 			FN_LOG(strm->valid_frames < 2 ? LL_DEBUG : LL_NOTICE, \
 			       "[Stream %02x] Lost too many packets, resyncing...\n", strm->flag);
+			FN_LOG(LL_DEBUG, "[Stream %02x] Last packet: flag: %02x seq: %d\n", strm->flag, hdr->flag, hdr->seq);
+
 			strm->synced = 0;
 			return 0;
 		}
