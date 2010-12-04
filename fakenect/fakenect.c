@@ -31,6 +31,18 @@
 #include <unistd.h>
 #include <time.h>
 
+#ifdef WINDOWS
+static void mSleep(int sec)
+{
+	Sleep(sec);
+}
+#else
+static void mSleep(int sec)
+{
+	Sleep(sec);
+}
+#endif
+
 #define GRAVITY 9.80665
 
 // The dev and ctx are just faked with these numbers
@@ -52,7 +64,8 @@ static void sleep_highres(double tm) {
     int sec = floor(tm);
     int usec = (tm - sec) * 1000000;
     if (tm > 0) {
-	sleep(sec);
+
+	mSleep(sec);
 	usleep(usec);
     }
 }

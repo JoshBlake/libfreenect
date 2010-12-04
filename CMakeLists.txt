@@ -68,7 +68,7 @@ include (FindOS)
 include (SetupDirectories)
 
 # Find packages needed to build library
-IF(UNIX)
+IF(UNIX AND NOT MINGW)
   find_package(libusb-1.0 REQUIRED)
   # libfreenect.h includes libusb.h, so everyone needs this too
   include_directories(${LIBUSB_1_INCLUDE_DIRS})

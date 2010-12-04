@@ -32,12 +32,10 @@
 #define PKTS_PER_XFER 16
 #define NUM_XFERS 16
 #define DEPTH_PKTBUF 1760
-#define RGB_PKTBUF 1920
+#define VIDEO_PKTBUF 1920
 
 
 #define USB_MAX_STREAMS 16
-
-//#include "freenect_internal.h"
 
 struct fnusb_ctx {
 	void *ctx;

@@ -8,18 +8,18 @@ set(CMAKE_C_FLAGS "-Wall")
 
 include_directories(${LIBUSB_1_INCLUDE_DIRS})
 
-#IF(WINDOWS)
-LIST(APPEND SRC core.c tilt.c cameras.c usb_libusb_win32.c)
-#ELSE(WINDOWS)
-#LIST(APPEND SRC core.c tilt.c cameras.c usb_libusb10.c)
-#ENDIF(WINDOWS)
+IF(WIN32)
+  LIST(APPEND SRC core.c tilt.c cameras.c usb_libusb_win32.c)
+ELSE(WIN32)
+  LIST(APPEND SRC core.c tilt.c cameras.c usb_libusb10.c)
+ENDIF(WIN32)
 
-# add_library (freenect SHARED ${SRC})
-# set_target_properties ( freenect PROPERTIES
-#   VERSION ${PROJECT_VER}
-#   SOVERSION ${PROJECT_APIVER})	
-# install (TARGETS freenect
-#   DESTINATION "${PROJECT_LIBRARY_INSTALL_DIR}")
+add_library (freenect SHARED ${SRC})
+set_target_properties ( freenect PROPERTIES
+  VERSION ${PROJECT_VER}
+  SOVERSION ${PROJECT_APIVER})	
+install (TARGETS freenect
+  DESTINATION "${PROJECT_LIBRARY_INSTALL_DIR}")
 
 add_library (freenectstatic STATIC ${SRC})
 set_target_properties (freenectstatic PROPERTIES OUTPUT_NAME freenect)
@@ -29,7 +29,7 @@ ENDIF()
 install (TARGETS freenectstatic
   DESTINATION "${PROJECT_LIBRARY_INSTALL_DIR}")
 
-# target_link_libraries (freenect ${LIBUSB_LIBRARIES})
+target_link_libraries (freenect ${LIBUSB_LIBRARIES})
 target_link_libraries (freenectstatic ${LIBUSB_LIBRARIES})
 
 # Install the header file
