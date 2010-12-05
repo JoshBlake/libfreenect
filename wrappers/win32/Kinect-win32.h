@@ -66,7 +66,8 @@ namespace Kinect
 		void RemoveListener(KinectListener *K);
 
 		unsigned short mDepthBuffer[KINECT_DEPTH_WIDTH * KINECT_DEPTH_HEIGHT];
-		unsigned char mColorBuffer[KINECT_COLOR_WIDTH * KINECT_COLOR_HEIGHT * 4];
+		//unsigned char mColorBuffer[KINECT_COLOR_WIDTH * KINECT_COLOR_HEIGHT * 4];
+		unsigned char* mColorBuffer;
 		float mAudioBuffer[KINECT_MICROPHONE_COUNT][KINECT_AUDIO_BUFFER_LENGTH];
 		
 		std::vector<KinectListener *> mListeners;

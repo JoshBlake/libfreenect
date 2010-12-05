@@ -96,6 +96,7 @@ namespace Kinect
 
 	Kinect::Kinect(void *internaldata, void *internalmotordata)
 	{
+		this->mColorBuffer = NULL;
 		InitializeCriticalSection(&mListenersLock);
 		mInternalData = new KinectInternalData(this);
 		mInternalData->OpenDevice( (struct usb_device *)internaldata, (struct usb_device *)internalmotordata );
@@ -234,6 +235,11 @@ namespace Kinect
 	{
 		KinectInternalData *KID = mInternalData;
 		
+		if (mColorBuffer == NULL)
+		{
+			mColorBuffer = (uint8_t*)malloc(sizeof(uint8_t) * KINECT_COLOR_WIDTH * KINECT_COLOR_HEIGHT * 4);
+		}
+
 		if (KID->mRGBMode == RGB_mode_IR)
 		{
 			unsigned short *buf = new unsigned short [640*480];

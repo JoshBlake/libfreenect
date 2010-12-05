@@ -274,4 +274,20 @@ __declspec(dllexport) int __cdecl freenect_get_mks_accel(freenect_device *dev, d
 	return 0;
 }
 
+__declspec(dllexport) int __cdecl freenect_set_video_buffer(freenect_device *dev, void *buf)
+{
+	if (buf == NULL)
+		return 0;
+
+	if (dev)
+	{
+		if (buf != dev->mKinect->mColorBuffer && 
+			dev->mKinect->mColorBuffer != NULL)
+		{
+			//free(dev->mKinect->mColorBuffer);
+		}
+		//dev->mKinect->mColorBuffer = (unsigned char*)buf;
+	}
+	return 0;
+}
 

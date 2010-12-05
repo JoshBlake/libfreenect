@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="H">
+      <UniqueIdentifier>{f6ce7c22-9cde-428c-8842-2010e62f8908}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CPP">
+      <UniqueIdentifier>{c6fa31ca-e9ca-4b69-8ea2-a4d33b7b28bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIB">
+      <UniqueIdentifier>{682fe194-16a3-4e9a-a007-c8b179984a2d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Kinect-Utility.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect-win32-internal.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect-win32.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="libfreenect.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Kinect-Driver.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect-FrameInput.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect-Utility.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect-win32.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="libfreenect-win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="libusb\lib\msvc\libusb.lib">
+      <Filter>LIB</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+</Project>

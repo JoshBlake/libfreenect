@@ -143,6 +143,9 @@ EXPORT int freenect_set_led(freenect_device *dev, freenect_led_options option);
 EXPORT int freenect_get_raw_accel(freenect_device *dev, int16_t* x, int16_t* y, int16_t* z);
 EXPORT int freenect_get_mks_accel(freenect_device *dev, double* x, double* y, double* z);
 
+EXPORT int freenect_set_depth_buffer(freenect_device *dev, void *buf);
+EXPORT int freenect_set_video_buffer(freenect_device *dev, void *buf);
+
 #ifdef __cplusplus
 }
 #endif
