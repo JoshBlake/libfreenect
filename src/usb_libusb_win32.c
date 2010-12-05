@@ -91,6 +91,11 @@ int fnusb_process_events(fnusb_ctx *ctx)
 
 		for (j=0; j<stream->num_xfers; j++)
 		{
+			if (stream->dead == 1)
+			{
+				break;
+			}
+
 			read = usb_reap_async_nocancel(stream->xfers[stream->xfer_index].context, 10000);
 			if (read != 0)
 				printf("read %d/%d bytes from %d,%d: %d\n", read, stream->len, i, j, stream->xfer_index);
@@ -232,6 +237,9 @@ static void iso_callback(fnusb_isoc_stream *stream, int read)
 {
 	int j;
 
+	if (stream->dead == 1)
+		return;
+
 	uint8_t *buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
 
 	for (j=0; j<read; j++)
@@ -257,6 +265,7 @@ void setup_EP_transfer(int i, fnusb_dev *dev, fnusb_isoc_stream *strm, int ep, i
 	if (strm->xfers[i].buffer != NULL)
 	{
 		free(strm->xfers[i].buffer);
+		strm->xfers[i].buffer = NULL;
 	}
 	strm->xfers[i].context = NULL;
 	strm->xfers[i].buffer = (uint8_t*)malloc(sizeof(uint8_t) * strm->len * strm->pkts);
@@ -279,19 +288,11 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *strm, fnusb_iso_cb cb, in
 	strm->len = len;
 	strm->xfers = (fnusb_xfer*)malloc(sizeof(fnusb_xfer) * num_xfers);
 	strm->xfer_index = 0;
+	strm->dead = 0;
 
 	for (i=0; i<num_xfers; i++) {
 		printf("Creating EP %02x transfer #%d\n", ep, i);		
 		setup_EP_transfer(i, dev, strm, ep, len);
-		/*strm->xfers[i].context = NULL;
-		strm->xfers[i].buffer = (uint8_t*)malloc(sizeof(uint8_t) * strm->len * strm->pkts);
-		ZeroMemory(strm->xfers[i].buffer, strm->pkts * strm->len);
-
-		usb_isochronous_setup_async(dev->dev, &strm->xfers[i].context, ep, len);
-		ret = usb_submit_async(strm->xfers[i].context, (char*)strm->xfers[i].buffer, pkts * len);
-		if (ret < 0)
-			printf("Failed to submit xfer %d: %d\n", i, ret);*/
-
 	}
 
 	for (i=0; i<USB_MAX_STREAMS; i++)
@@ -326,10 +327,17 @@ int fnusb_stop_iso(fnusb_dev *dev, fnusb_isoc_stream *strm)
 		printf("stop 0 %d\n", i);
 		printf("stop 0 %d %d\n", i, strm->xfers[i].buffer);
 		if (strm->xfers[i].buffer != NULL)
+		{
 			free(strm->xfers[i].buffer);
+			strm->xfers[i].buffer = NULL;
+		}
 	}
 	printf("stop 1\n");
-	free(strm->xfers);
+	if (strm->xfers != NULL)
+	{
+		free(strm->xfers);
+		strm->xfers = NULL;
+	}
 	printf("stop 2\n");
 	memset(strm, 0, sizeof(*strm));
 	printf("stop 3\n");

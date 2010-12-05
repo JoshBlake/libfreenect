@@ -338,7 +338,7 @@ void *freenect_threadfunc(void *arg)
 	freenect_set_video_buffer(f_dev, rgb_back);
 
 	freenect_start_depth(f_dev);
-	//sfreenect_start_video(f_dev);
+	freenect_start_video(f_dev);
 
 	printf("'w'-tilt up, 's'-level, 'x'-tilt down, '0'-'6'-select LED mode, 'f'-video format\n");
 
