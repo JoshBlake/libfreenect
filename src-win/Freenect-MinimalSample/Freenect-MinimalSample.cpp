@@ -1,15 +1,15 @@
-#include "../libfreenect.h"
+#include <libfreenect.h>
 #include <windows.h>
 #include <conio.h>
 #include <stdio.h>
 
 
-void DepthCB(freenect_device *dev, freenect_depth *depth, uint32_t timestamp)
+void DepthCB(freenect_device *dev, void *depth, uint32_t timestamp)
 {
 	printf("depth..\n");
 };
 
-void RGBCB(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp)
+void RGBCB(freenect_device *dev, void *rgb, uint32_t timestamp)
 {
 	printf("color..\n");
 };
@@ -48,9 +48,9 @@ int main(int argc, char **argv)
 			printf("freenect_get_user failed!\n");
 		};
 		freenect_set_depth_callback(Device, DepthCB);
-		freenect_set_rgb_callback(Device, RGBCB);
+		freenect_set_video_callback(Device, RGBCB);
 		freenect_start_depth(Device);
-		freenect_start_rgb(Device);
+		freenect_start_video(Device);
 	
 		while (!_kbhit())
 		{

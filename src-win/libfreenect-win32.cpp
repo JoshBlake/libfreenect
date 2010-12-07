@@ -18,7 +18,7 @@ struct _freenect_device
 	_freenect_context *mContext;
 	void *mUserData;	
 	freenect_depth_cb mDepthCallback;
-	freenect_rgb_cb mRGBCallback;
+	freenect_video_cb mRGBCallback;
 	bool mDepthEnabled;
 	bool mRGBEnabled;
 	int mDepthFrameCounter;
@@ -65,7 +65,7 @@ public:
 	};		
 };
 
-int __cdecl freenect_init(freenect_context **ctx, freenect_usb_context *usb_ctx)
+__declspec(dllexport) int __cdecl freenect_init(freenect_context **ctx, freenect_usb_context *usb_ctx)
 {
 	_freenect_context *context = new _freenect_context;
 	context->mLogCallback = NULL;
@@ -205,7 +205,7 @@ __declspec(dllexport) void __cdecl freenect_set_depth_callback(freenect_device *
 		dev->mDepthCallback = cb;
 	};
 };
-__declspec(dllexport) void __cdecl freenect_set_rgb_callback(freenect_device *dev, freenect_rgb_cb cb)
+__declspec(dllexport) void __cdecl freenect_set_video_callback(freenect_device *dev, freenect_video_cb cb)
 {
 	if (dev)
 	{
@@ -213,64 +213,30 @@ __declspec(dllexport) void __cdecl freenect_set_rgb_callback(freenect_device *de
 	};
 };
 
-__declspec(dllexport) int __cdecl freenect_set_rgb_format(freenect_device *dev, freenect_rgb_format fmt)
-{
-	return 0;
-};
-
 __declspec(dllexport) int __cdecl freenect_set_depth_format(freenect_device *dev, freenect_depth_format fmt)
 {
 	return 0;
 };
 
-__declspec(dllexport) int __cdecl freenect_start_depth(freenect_device *dev)
+__declspec(dllexport) int __cdecl freenect_set_video_format(freenect_device *dev, freenect_video_format fmt)
 {
-	if (dev) dev->mDepthEnabled = true;
 	return 0;
 };
 
-__declspec(dllexport) int __cdecl freenect_start_rgb(freenect_device *dev)
+__declspec(dllexport) int __cdecl freenect_set_depth_buffer(freenect_device *dev, void *buf)
 {
-	if (dev) dev->mRGBEnabled = true;
-	return 0;
-};
+	if (buf == NULL)
+		return 0;
 
-__declspec(dllexport) int __cdecl freenect_stop_depth(freenect_device *dev)
-{
-	if (dev) dev->mDepthEnabled = false;
-	return 0;
-};
-
-__declspec(dllexport) int __cdecl freenect_stop_rgb(freenect_device *dev)
-{
-	if (dev) dev->mRGBEnabled = false;
-	return 0;
-};
-
-__declspec(dllexport) int __cdecl freenect_set_tilt_degs(freenect_device *dev, double angle)
-{
 	if (dev)
 	{
-		dev->mKinect->SetMotorPosition(angle);
-	};
-	return 0;
-};
-
-__declspec(dllexport) int __cdecl freenect_set_led(freenect_device *dev, freenect_led_options option)
-{
-	if (dev)
-	{
-		dev->mKinect->SetLedMode(option);
-	};
-	return 0;
-};
-
-__declspec(dllexport) int __cdecl freenect_get_raw_accel(freenect_device *dev, int16_t* x, int16_t* y, int16_t* z)
-{
-	return 0;
-};
-__declspec(dllexport) int __cdecl freenect_get_mks_accel(freenect_device *dev, double* x, double* y, double* z)
-{
+		if (buf != dev->mKinect->mDepthBuffer &&
+			dev->mKinect->mDepthBuffer != NULL)
+		{
+			//free(dev->mKinect->mDepthBuffer);
+		}
+		//dev->mKinect->mDepthBuffer = (unsigned char*)buf;
+	}
 	return 0;
 }
 
@@ -291,3 +257,64 @@ __declspec(dllexport) int __cdecl freenect_set_video_buffer(freenect_device *dev
 	return 0;
 }
 
+__declspec(dllexport) int __cdecl freenect_start_depth(freenect_device *dev)
+{
+	if (dev) dev->mDepthEnabled = true;
+	return 0;
+};
+
+__declspec(dllexport) int __cdecl freenect_start_video(freenect_device *dev)
+{
+	if (dev) dev->mRGBEnabled = true;
+	return 0;
+};
+
+__declspec(dllexport) int __cdecl freenect_stop_depth(freenect_device *dev)
+{
+	if (dev) dev->mDepthEnabled = false;
+	return 0;
+};
+
+__declspec(dllexport) int __cdecl freenect_stop_video(freenect_device *dev)
+{
+	if (dev) dev->mRGBEnabled = false;
+	return 0;
+};
+
+__declspec(dllexport) int __cdecl freenect_update_tilt_state(freenect_device *dev)
+{
+	return 0;
+}
+
+__declspec(dllexport) freenect_raw_tilt_state* __cdecl freenect_get_tilt_state(freenect_device *dev)
+{
+	return NULL;
+}
+
+__declspec(dllexport) double __cdecl freenect_get_tilt_degs(freenect_raw_tilt_state *state)
+{
+	return 0.0;
+}
+
+__declspec(dllexport) int __cdecl freenect_set_tilt_degs(freenect_device *dev, double angle)
+{
+	if (dev)
+	{
+		dev->mKinect->SetMotorPosition(angle);
+	};
+	return 0;
+};
+
+__declspec(dllexport) int __cdecl freenect_set_led(freenect_device *dev, freenect_led_options option)
+{
+	if (dev)
+	{
+		dev->mKinect->SetLedMode(option);
+	};
+	return 0;
+};
+
+__declspec(dllexport) void __cdecl freenect_get_mks_accel(freenect_raw_tilt_state *state, double* x, double* y, double* z)
+{
+	return;
+}

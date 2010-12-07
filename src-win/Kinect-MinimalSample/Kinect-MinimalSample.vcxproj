@@ -14,6 +14,7 @@
     <ProjectGuid>{6967B2BD-8FA4-4303-9300-926ABB86A2A2}</ProjectGuid>
     <RootNamespace>KinectMinimalSample</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>libfreenect-cpp-MinimalSample</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

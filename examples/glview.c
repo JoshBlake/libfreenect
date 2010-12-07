@@ -98,7 +98,7 @@ void DrawGLScene()
 		return;
 	}
 
-	void *tmp;
+	uint8_t *tmp;
 
 	if (got_depth) {
 		tmp = depth_front;
@@ -323,7 +323,7 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 	assert (rgb_back == rgb);
 	rgb_back = rgb_mid;
 	freenect_set_video_buffer(dev, rgb_back);
-	rgb_mid = rgb;
+	rgb_mid = (uint8_t*)rgb;
 
 	got_rgb++;
 	pthread_cond_signal(&gl_frame_cond);
@@ -378,11 +378,11 @@ int main(int argc, char **argv)
 {
 	int res;
 
-	depth_mid = malloc(640*480*3);
-	depth_front = malloc(640*480*3);
-	rgb_back = malloc(640*480*3);
-	rgb_mid = malloc(640*480*3);
-	rgb_front = malloc(640*480*3);
+	depth_mid = (uint8_t*)malloc(640*480*3);
+	depth_front = (uint8_t*)malloc(640*480*3);
+	rgb_back = (uint8_t*)malloc(640*480*3);
+	rgb_mid = (uint8_t*)malloc(640*480*3);
+	rgb_front = (uint8_t*)malloc(640*480*3);
 
 	printf("Kinect camera test\n");
 
