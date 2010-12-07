@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6967B2BD-8FA4-4303-9300-926ABB86A2A2}</ProjectGuid>
-    <RootNamespace>KinectMinimalSample</RootNamespace>
+    <ProjectGuid>{D94F0026-7BD7-43CA-ADAE-5C24C32DE973}</ProjectGuid>
+    <RootNamespace>FreenectMinimalSample</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -49,6 +49,7 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -89,7 +90,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Kinect-MinimalSample.cpp" />
+    <ClCompile Include="Freenect-MinimalSample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kinect.vcxproj">

@@ -21,7 +21,6 @@
     <ClInclude Include="Kinect-win32.h">
       <Filter>H</Filter>
     </ClInclude>
-    <ClInclude Include="libfreenect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Kinect-Driver.cpp">

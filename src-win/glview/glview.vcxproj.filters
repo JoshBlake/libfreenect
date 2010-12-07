@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glview.cpp">
+    <ClCompile Include="..\..\examples\glview.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

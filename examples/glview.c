@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 #include "libfreenect.h"
 
 #include <pthread.h>
@@ -265,7 +266,7 @@ uint16_t t_gamma[2048];
 void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 {
 	int i;
-	uint16_t *depth = v_depth;
+	uint16_t *depth = (uint16_t *)v_depth;
 
 	pthread_mutex_lock(&gl_backbuf_mutex);
 	for (i=0; i<FREENECT_FRAME_PIX; i++) {
