@@ -34,7 +34,7 @@
 
 int freenect_init(freenect_context **ctx, freenect_usb_context *usb_ctx)
 {
-	*ctx = malloc(sizeof(freenect_context));
+	*ctx = (freenect_context*)malloc(sizeof(freenect_context));
 	if (!ctx)
 		return -1;
 
@@ -63,13 +63,13 @@ int freenect_process_events(freenect_context *ctx)
 
 int freenect_num_devices(freenect_context *ctx)
 {
-	return fnusb_num_devices(ctx->usb.ctx);
+	return fnusb_num_devices((fnusb_ctx*)ctx->usb.ctx);
 }
 
 int freenect_open_device(freenect_context *ctx, freenect_device **dev, int index)
 {
 	int res;
-	freenect_device *pdev = malloc(sizeof(freenect_device));
+	freenect_device *pdev = (freenect_device*)malloc(sizeof(freenect_device));
 	if (!pdev)
 		return -1;
 

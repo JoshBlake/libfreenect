@@ -50,7 +50,7 @@ static int stream_process(freenect_context *ctx, packet_stream *strm, uint8_t *p
 	if (len < 12)
 		return 0;
 
-	struct pkt_hdr *hdr = (void*)pkt;
+	struct pkt_hdr *hdr = (pkt_hdr *)pkt;
 	uint8_t *data = pkt + sizeof(*hdr);
 	int datalen = len - sizeof(*hdr);
 
@@ -168,10 +168,10 @@ static void stream_initbufs(freenect_context *ctx, packet_stream *strm, int rlen
 
 	if (rlen == 0) {
 		strm->split_bufs = 0;
-		strm->raw_buf = strm->proc_buf;
+		strm->raw_buf = (uint8_t*)strm->proc_buf;
 	} else {
 		strm->split_bufs = 1;
-		strm->raw_buf = malloc(rlen);
+		strm->raw_buf = (uint8_t*)malloc(rlen);
 	}
 }
 
@@ -205,7 +205,7 @@ static int stream_setbuf(freenect_context *ctx, packet_stream *strm, void *pbuf)
 			strm->proc_buf = pbuf;
 
 		if (!strm->split_bufs)
-			strm->raw_buf = strm->proc_buf;
+			strm->raw_buf = (uint8_t*)strm->proc_buf;
 		return 0;
 	}
 }
@@ -261,10 +261,10 @@ static void depth_process(freenect_device *dev, uint8_t *pkt, int len)
 
 	switch (dev->depth_format) {
 		case FREENECT_DEPTH_11BIT:
-			convert_packed_to_16bit(dev->depth.raw_buf, dev->depth.proc_buf, 11, FREENECT_FRAME_PIX);
+			convert_packed_to_16bit(dev->depth.raw_buf, (uint16_t*)dev->depth.proc_buf, 11, FREENECT_FRAME_PIX);
 			break;
 		case FREENECT_DEPTH_10BIT:
-			convert_packed_to_16bit(dev->depth.raw_buf, dev->depth.proc_buf, 10, FREENECT_FRAME_PIX);
+			convert_packed_to_16bit(dev->depth.raw_buf, (uint16_t*)dev->depth.proc_buf, 10, FREENECT_FRAME_PIX);
 			break;
 		case FREENECT_DEPTH_10BIT_PACKED:
 		case FREENECT_DEPTH_11BIT_PACKED:
@@ -458,17 +458,17 @@ static void video_process(freenect_device *dev, uint8_t *pkt, int len)
 
 	switch (dev->video_format) {
 		case FREENECT_VIDEO_RGB:
-			convert_bayer_to_rgb(dev->video.raw_buf, dev->video.proc_buf);
+			convert_bayer_to_rgb(dev->video.raw_buf, (uint8_t*)dev->video.proc_buf);
 			break;
 		case FREENECT_VIDEO_BAYER:
 			break;
 		case FREENECT_VIDEO_IR_10BIT:
-			convert_packed_to_16bit(dev->video.raw_buf, dev->video.proc_buf, 10, FREENECT_IR_FRAME_PIX);
+			convert_packed_to_16bit(dev->video.raw_buf, (uint16_t*)dev->video.proc_buf, 10, FREENECT_IR_FRAME_PIX);
 			break;
 		case FREENECT_VIDEO_IR_10BIT_PACKED:
 			break;
 		case FREENECT_VIDEO_IR_8BIT:
-			convert_packed_to_8bit(dev->video.raw_buf, dev->video.proc_buf, 10, FREENECT_IR_FRAME_PIX);
+			convert_packed_to_8bit(dev->video.raw_buf, (uint8_t*)dev->video.proc_buf, 10, FREENECT_IR_FRAME_PIX);
 			break;
 	}
 
@@ -486,11 +486,12 @@ typedef struct {
 static int send_cmd(freenect_device *dev, uint16_t cmd, void *cmdbuf, unsigned int cmd_len, void *replybuf, unsigned int reply_len)
 {
 	freenect_context *ctx = dev->parent;
-	int res, actual_len;
+	int res;
+	unsigned int actual_len;
 	uint8_t obuf[0x400];
 	uint8_t ibuf[0x200];
-	cam_hdr *chdr = (void*)obuf;
-	cam_hdr *rhdr = (void*)ibuf;
+	cam_hdr *chdr = (cam_hdr*)obuf;
+	cam_hdr *rhdr = (cam_hdr*)ibuf;
 
 	if (cmd_len & 1 || cmd_len > (0x400 - sizeof(*chdr))) {
 		FN_ERROR("send_cmd: Invalid command length (0x%x)\n", cmd_len);

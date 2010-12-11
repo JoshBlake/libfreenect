@@ -34,7 +34,7 @@
 typedef void (*fnusb_iso_cb)(freenect_device *dev, uint8_t *buf, int len);
 
 #ifdef WIN32
-#include "usb_libusb_win32.h"
+#include "usb_openni.h"
 #else
 #include "usb_libusb10.h"
 #endif

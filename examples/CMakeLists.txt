@@ -1,8 +1,8 @@
 ######################################################################################
 # Packages needed for examples
 ######################################################################################
-
-add_executable(glview glview.c)
+set(CMAKE_C_FLAGS "-Wall -g")
+add_executable(glview glview.cpp)
 
 # Mac just has everything already
 if(APPLE)
