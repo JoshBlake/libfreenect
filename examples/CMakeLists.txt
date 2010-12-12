@@ -2,7 +2,14 @@
 # Packages needed for examples
 ######################################################################################
 set(CMAKE_C_FLAGS "-Wall -g")
-add_executable(glview glview.c)
+
+LIST(APPEND SRC glview.c)
+
+if (WIN32)
+  set_source_files_properties(${SRC} PROPERTIES LANGUAGE CXX)
+endif()
+
+add_executable(glview ${SRC})
 
 # Mac just has everything already
 if(APPLE)
