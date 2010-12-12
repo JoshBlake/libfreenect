@@ -23,9 +23,7 @@
  * Binary distributions must follow the binary distribution requirements of
  * either License.
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +89,7 @@ void DrawGLScene()
 		return;
 	}
 
-	void *tmp;
+	uint8_t *tmp;
 
 	if (got_depth) {
 		tmp = depth_front;
@@ -262,7 +260,7 @@ uint16_t t_gamma[2048];
 void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 {
 	int i;
-	uint16_t *depth = v_depth;
+	uint16_t *depth = (uint16_t*)v_depth;
 
 	pthread_mutex_lock(&gl_backbuf_mutex);
 	for (i=0; i<FREENECT_FRAME_PIX; i++) {
@@ -322,7 +320,7 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 	assert (rgb_back == rgb);
 	rgb_back = rgb_mid;
 	freenect_set_video_buffer(dev, rgb_back);
-	rgb_mid = rgb;
+	rgb_mid = (uint8_t*)rgb;
 
 	got_rgb++;
 	pthread_cond_signal(&gl_frame_cond);
@@ -346,10 +344,10 @@ void *freenect_threadfunc(void *arg)
 
 	while (!die && freenect_process_events(f_ctx) >= 0) {
 		freenect_raw_tilt_state* state;
-		freenect_update_tilt_state(f_dev);
-		state = freenect_get_tilt_state(f_dev);
+		//freenect_update_tilt_state(f_dev);
+		//state = freenect_get_tilt_state(f_dev);
 		double dx,dy,dz;
-		freenect_get_mks_accel(state, &dx, &dy, &dz);
+		//freenect_get_mks_accel(state, &dx, &dy, &dz);
 		//printf("\r raw acceleration: %4d %4d %4d  mks acceleration: %4f %4f %4f", state->accelerometer_x, state->accelerometer_y, state->accelerometer_z, dx, dy, dz);
 		fflush(stdout);
 
@@ -381,11 +379,11 @@ int main(int argc, char **argv)
 {
 	int res;
 
-	depth_mid = malloc(640*480*3);
-	depth_front = malloc(640*480*3);
-	rgb_back = malloc(640*480*3);
-	rgb_mid = malloc(640*480*3);
-	rgb_front = malloc(640*480*3);
+	depth_mid = (uint8_t*)malloc(640*480*3);
+	depth_front = (uint8_t*)malloc(640*480*3);
+	rgb_back = (uint8_t*)malloc(640*480*3);
+	rgb_mid = (uint8_t*)malloc(640*480*3);
+	rgb_front = (uint8_t*)malloc(640*480*3);
 
 	printf("Kinect camera test\n");
 
@@ -405,8 +403,8 @@ int main(int argc, char **argv)
 	}
 
 	//freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
-	freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
-	//freenect_set_log_level(f_ctx, FREENECT_LOG_FLOOD);
+	//freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
+	freenect_set_log_level(f_ctx, FREENECT_LOG_FLOOD);
 
 	int nr_devices = freenect_num_devices (f_ctx);
 	printf ("Number of devices found: %d\n", nr_devices);
@@ -434,7 +432,3 @@ int main(int argc, char **argv)
 	while(1);
 	return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif

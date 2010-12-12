@@ -4,16 +4,13 @@
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
-set(CMAKE_C_FLAGS "-Wall -g")
-
-include_directories(${LIBUSB_1_INCLUDE_DIRS})
+set(CMAKE_C_FLAGS "-Wall")
 
 IF(WIN32)
-  include_directories ("C:/data/projects/openni/OpenNI/Include")
- # include_directories ("C:/data/projects/openni/OpenNI/Source/OpenNI/Win32")
- # include_directories ("C:/data/projects/openni/OpenNI/Platform/Win32/Driver/Build/sys")
+  include_directories (${OPENNI_INCLUDE_DIRS})
   LIST(APPEND SRC core.c tilt.c cameras.c usb_openni.cpp)
 ELSE(WIN32)
+  include_directories(${LIBUSB_1_INCLUDE_DIRS})
   LIST(APPEND SRC core.c tilt.c cameras.c usb_libusb10.c)
 ENDIF(WIN32)
 
@@ -33,11 +30,13 @@ ENDIF()
 install (TARGETS freenectstatic
   DESTINATION "${PROJECT_LIBRARY_INSTALL_DIR}")
 
-target_link_libraries (freenect "C:/data/projects/openni/OpenNI/Platform/Win32/Lib/Debug/openNI.lib")
-target_link_libraries (freenectstatic "C:/data/projects/openni/OpenNI/Platform/Win32/Lib/Debug/openNI.lib")
-
-target_link_libraries (freenect ${LIBUSB_LIBRARIES})
-target_link_libraries (freenectstatic ${LIBUSB_LIBRARIES})
+IF(WIN32)
+  target_link_libraries (freenect ${OPENNI_LIBRARIES})
+  target_link_libraries (freenectstatic ${OPENNI_LIBRARIES})
+ELSE(Win32)
+  target_link_libraries (freenect ${LIBUSB_LIBRARIES})
+  target_link_libraries (freenectstatic ${LIBUSB_LIBRARIES})
+ENDIF(WIN32)
 
 # Install the header file
 install (FILES "../include/libfreenect.h" "../include/libfreenect.hpp"
