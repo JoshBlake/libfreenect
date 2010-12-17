@@ -176,7 +176,7 @@ struct usb_device* fnusb_find_device_by_vid_pid(unsigned short vid, unsigned sho
 {
 	struct usb_bus *busses;
 	struct usb_bus *bus;
-    int count = 0;
+	int count = 0;
 
 	busses = usb_get_busses();
 
@@ -211,14 +211,15 @@ int fnusb_open_subdevices(freenect_device *dev, int index)
 		printf("open subdevices 1 can't find camera\n");
 		return 1;
 	}
+	dev->usb_cam.parent = dev;
 	xnPrintError(status, "Open Camera");
 	status = xnUSBGetDeviceSpeed(dev->usb_cam.dev, &DevSpeed);
 	xnPrintError(status, "Get speed");
-		printf("dev: %d\n", DevSpeed);
+		printf("dev: %d  cam device: %p\n", DevSpeed, dev->usb_cam.dev);
 				printf("Setting interface\n");
 	status = xnUSBSetInterface(dev->usb_cam.dev, 0, 0);
 	xnPrintError(status, "Set interface");
-
+/*
 		printf("open subdevices 2 motor\n");
 		
 	status = xnUSBOpenDevice(VID_MICROSOFT, PID_NUI_CAMERA, USB_DEVICE_EXTRA_PARAM, path, &dev->usb_motor.dev);
@@ -233,6 +234,7 @@ int fnusb_open_subdevices(freenect_device *dev, int index)
 				printf("Setting interface\n");
 	status = xnUSBSetInterface(dev->usb_motor.dev, 0, 0);
 	xnPrintError(status, "Set interface");
+*/
 	return 0;
 }
 
@@ -250,13 +252,25 @@ int fnusb_close_subdevices(freenect_device *dev)
 }
 
 
-XnBool XN_CALLBACK_TYPE stream_callback(XnUChar* pBuffer, XnUInt32 nBufferSize, void* pCallbackData)
+XnBool XN_CALLBACK_TYPE stream_callback(XnUChar* buf, XnUInt32 nBufferSize, void* pCallbackData)
 {
 	fnusb_isoc_stream *stream = (fnusb_isoc_stream *)pCallbackData;
 	if (nBufferSize != 0)
 	{
 		printf("[%d] received %d\n", stream->ep, nBufferSize);
 	}
+
+	
+	for (int j=0; j<nBufferSize; j++)
+	{
+		if (buf[j] == 'R' &&
+			buf[j+1] == 'B')
+		{
+			//printf("RB: %d\n", j);
+			stream->cb(stream->parent->parent, &buf[j], stream->len);
+		}
+	}
+
 	return TRUE;
 }
 
@@ -267,7 +281,7 @@ static void iso_callback(fnusb_isoc_stream *stream, int read)
 	
 	if (stream->dead == 1)
 		return;
-
+	
 	uint8_t *buf = (uint8_t*)stream->xfers[stream->xfer_index].buffer;
 
 	for (j=0; j<read; j++)
@@ -318,8 +332,8 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *stream, fnusb_iso_cb cb, 
 	stream->ep = ep;
 	stream->len = len;
 	stream->dead = 0;
-	return 0;
-	printf("start iso %d: 1 open endpoint\n", ep);
+//	return 0;
+	printf("start iso %d: 1 open endpoint %p %p\n", ep, dev, dev->parent);
 	status = xnUSBOpenEndPoint(dev->dev, ep, XN_USB_EP_ISOCHRONOUS, XN_USB_DIRECTION_IN, &stream->ep_handle);
 	if (status != XN_STATUS_OK)
 	{
@@ -330,7 +344,7 @@ int fnusb_start_iso(fnusb_dev *dev, fnusb_isoc_stream *stream, fnusb_iso_cb cb, 
 	printf("start iso %d: 2 shutdown read thread\n", ep);
 	xnUSBShutdownReadThread(stream->ep_handle);
 	printf("start iso %d: 3 init read thread\n", ep);
-	status = xnUSBInitReadThread(stream->ep_handle, len, NUM_XFERS, READ_TIMEOUT, stream_callback, stream);
+	status = xnUSBInitReadThread(stream->ep_handle, len*80, NUM_XFERS, READ_TIMEOUT, stream_callback, stream);
 	if (status != XN_STATUS_OK)
 	{
 		xnPrintError(status, "Can't init read thread");
@@ -360,7 +374,10 @@ int fnusb_control(fnusb_dev *dev, uint8_t bmRequestType, uint8_t bRequest, uint1
 		status = xnUSBSendControl(dev->dev, XN_USB_CONTROL_TYPE_VENDOR, bRequest, wValue, wIndex, (unsigned char*)data, wLength, 0);
 		xnPrintError(status, "Sent control");
 		if (status == XN_STATUS_OK)
+		{
+			Sleep(100);
 			return 0;
+		}
 	}
 	else if (bmRequestType == 0xC0)
 	{

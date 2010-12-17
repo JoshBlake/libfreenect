@@ -402,9 +402,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	//freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
+	freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
 	//freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
-	freenect_set_log_level(f_ctx, FREENECT_LOG_FLOOD);
+	//freenect_set_log_level(f_ctx, FREENECT_LOG_FLOOD);
 
 	int nr_devices = freenect_num_devices (f_ctx);
 	printf ("Number of devices found: %d\n", nr_devices);

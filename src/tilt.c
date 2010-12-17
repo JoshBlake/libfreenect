@@ -49,7 +49,7 @@ int freenect_update_tilt_state(freenect_device *dev)
 	freenect_context *ctx = dev->parent;
 	uint8_t buf[10];
 	uint16_t ux, uy, uz;
-	int ret = fnusb_control(&dev->usb_motor, 0xC0, 0x32, 0x0, 0x0, buf, 10);
+	int ret = 10; //fnusb_control(&dev->usb_motor, 0xC0, 0x32, 0x0, 0x0, buf, 10);
 	if (ret != 10) {
 		FN_ERROR("Error in accelerometer reading, libusb_control_transfer returned %d\n", ret);
 		return ret < 0 ? ret : -1;
@@ -76,7 +76,7 @@ int freenect_set_tilt_degs(freenect_device *dev, double angle)
 	angle = (angle<MIN_TILT_ANGLE) ? MIN_TILT_ANGLE : ((angle>MAX_TILT_ANGLE) ? MAX_TILT_ANGLE : angle);
 	angle = angle * 2;
 
-	ret = fnusb_control(&dev->usb_motor, 0x40, 0x31, (uint16_t)angle, 0x0, empty, 0x0);
+	ret = 0; //fnusb_control(&dev->usb_motor, 0x40, 0x31, (uint16_t)angle, 0x0, empty, 0x0);
 	return ret;
 }
 
@@ -84,7 +84,7 @@ int freenect_set_led(freenect_device *dev, freenect_led_options option)
 {
 	int ret;
 	uint8_t empty[0x1];
-	ret = fnusb_control(&dev->usb_motor, 0x40, 0x06, (uint16_t)option, 0x0, empty, 0x0);
+	ret = 0; //fnusb_control(&dev->usb_motor, 0x40, 0x06, (uint16_t)option, 0x0, empty, 0x0);
 	return ret;
 }
 

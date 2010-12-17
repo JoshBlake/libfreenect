@@ -256,7 +256,9 @@ static void depth_process(freenect_device *dev, uint8_t *pkt, int len)
 	if (!got_frame)
 		return;
 
-	FN_SPEW("Got depth frame %d/%d packets arrived, TS %08x\n",
+	FN_SPEW("Got depth frame %d/%d packets arrived\n",
+	       dev->depth.valid_pkts, dev->depth.pkts_per_frame);
+FN_SPEW("Got depth frame %d/%d packets arrived, TS %08x\n",
 	       dev->depth.valid_pkts, dev->depth.pkts_per_frame, dev->depth.timestamp);
 
 	switch (dev->depth_format) {
